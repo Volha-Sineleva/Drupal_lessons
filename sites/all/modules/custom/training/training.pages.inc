@@ -131,7 +131,6 @@ function training_default_arg_page($arg){
  *
  * @return string
  */
-
 function training_title_title(){
   global $user;
   if (user_is_logged_in()){
@@ -144,18 +143,6 @@ function training_title_title(){
   return t('Dynamic title: username = ') . $username;
 }
 
-
-function training_title_page(){
-  global $user;
-  if (user_is_logged_in()){
-    print_r('USER IS LOGGED ');
-    $username = $user->name;
-  }
-  else {
-    print_r('USER IS NOT LOGGED');
-    $username = 'anonymouse';
-  }
-}
 /**
  * Page callback for training_menu(),
  * called from $menu['theme'], $menu['theme/link']
