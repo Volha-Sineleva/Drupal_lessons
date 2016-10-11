@@ -1,0 +1,10 @@
+name = Training Test 1
+description = A testing module for Training section 1
+package = Training modules
+core = 7.x
+
+dependencies[] = simpletest
+
+testing_api = 2.x
+
+files[] = training_test.test

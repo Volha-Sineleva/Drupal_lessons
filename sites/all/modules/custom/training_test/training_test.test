@@ -1,0 +1,177 @@
+<?php
+
+/**
+ * @file
+ * Tests for menu and theme example module.
+ */
+class TrainingTestCase extends DrupalWebTestCase {
+  protected $web_user;
+
+  public static function getInfo() {
+    return array(
+      'name' => 'Test cases for Drupal Training Section 1',
+      'description' => 'Checks behavior of Menu and Themes',
+      'group' => 'Training',
+    );
+  }
+
+  /**
+   * Enable modules and create user with specific permissions.
+   */
+  public function setUp() {
+    parent::setUp('training');
+  }
+
+  protected function assertXpath($xpath, $args, $message = '', $group = 'Other', array $caller = NULL) {
+    $elements = $this->xpath($xpath, $args);
+
+    $this->assert(count($elements) > 0, $message ? $message : t('xpath:@xpath not found', array('@xpath'=>$this->buildXPathQuery($xpath, $args))), $group, $caller);
+  }
+
+  function testTrainingThemes() {
+
+    //check list
+    $this->drupalGet('training/theme');
+    $this->assertXpath('//div[@class=:className]//ol//li//a', array(':className'=>'item-list'), t('List of links not found.'));
+    $this->assertXpath('//div[@class=:className]//h3[normalize-space(text())=:label]', array(':className'=>'item-list', ':label'=>'Links to themes'), t('List\'t header not found.'));
+
+
+    //check table
+    $this->drupalGet('training/theme/table');
+    $this->assertXpath('//table[@id=:id]', array(':id'=>'table-test'), t('Table with id "table-test".'));
+    $this->assertXpath('//table[@id=:id]//caption[normalize-space(text())=:caption]',
+      array(':id'=>'table-test', ':caption'=>'Theme table sample'), t('Table caption'));
+
+    $this->assertXpath('//table[@id=:id]//thead//th[normalize-space(text())=:header]',
+      array(':id'=>'table-test', ':header'=>'header 1'), t('Table header'));
+
+    $this->assertXpath('//table[@id=:id]//tbody//tr[contains(@class,:className)]',
+      array(':id'=>'table-test', ':className'=>'rowClass'), t('Table row class'));
+
+    $this->assertXpath('//table[@id=:id]//tbody//tr//td[@colspan=:colspan]',
+      array(':id'=>'table-test', ':colspan'=>2), t('Table colspan'));
+
+
+    $this->drupalGet('training/theme/image');
+    $image = 'modules/image/sample.png';
+    $this->assertXpath('//img[contains(@src, :src) and @class=:className]',
+      array(':src'=>$image, ':className'=>'simple-image'),
+      t('Basic image with "simple-image" class'));
+
+    foreach (image_styles() as $style_name => $style) {
+      $url = image_style_url($style_name, $image);
+
+      $this->assertXpath('//img[contains(@src, :src)]',
+        array(':src'=>$url),
+        t('Image with imagestyle '.$style_name));
+    }
+
+
+    $this->drupalGet('training/theme/access');
+    $this->assertText('Custom access inversed for rendered content');
+    $this->assertNoText('Custom access for rendered content');
+
+    $web_user = $this->drupalCreateUser(array('access protected content'));
+    $this->drupalLogin($web_user);
+
+    $this->drupalGet('training/theme/access');
+    $this->assertText('Custom access for rendered content');
+    $this->assertNoText('Custom access inversed for rendered content');
+
+  }
+
+  /**
+   * Test the various menus.
+   */
+  function testTrainingMenu() {
+
+    $this->drupalGet('');
+
+    $this->clickLink(t('Training Landing Page'));
+    $this->assertUrl('training/menu');
+    $this->assertText(t('This is the landing page of the Training module'));
+
+
+    $this->drupalGet('training/menu/custom_access');
+    $this->assertResponse(403);
+
+    $this->drupalGet('training/menu/permissioned');
+    $this->assertResponse(403);
+
+
+    $this->drupalGet('training/menu/callback');
+    $this->assertText(t('The menu entry for this page is of type MENU_CALLBACK'));
+    $this->assertNoLinkByHref('training/menu/callback');
+
+
+
+    $this->clickLink(t('Tabs'));
+    $this->assertText(t('This is the "tabs" menu entry'));
+
+    $this->assertXpath('//ul[contains(@class, :class1) and contains(@class, :class2)]', array(':class1' => 'tabs', ':class2' => 'primary'),
+      t('Not tab menu. Use MENU_DEFAULT_LOCAL_TASK for first tab item and MENU_LOCAL_TASK for others'));
+
+    $this->drupalGet('training/menu/tabs/second');
+    $this->assertText(t('This is the tab "second" in the "basic tabs" example'));
+
+    $this->clickLink(t('third'));
+    $this->assertText(t('This is the tab "third" in the "basic tabs" example'));
+
+    $this->drupalGet('training/menu/tabs/default/third');
+    $this->assertXpath('//ul[contains(@class, :class1) and contains(@class, :class2)]', array(':class1' => 'tabs', ':class2' => 'secondary'),
+      t('Not the second tab menu. Use MENU_DEFAULT_LOCAL_TASK for first tab item and MENU_LOCAL_TASK for others'));
+
+    $this->assertXpath('//ul[@id=:id]//a[contains(@href, :link)]', array(':id'=>'main-menu-links', ':link'=>'training/menu/main'), t('Not the main menu item.'));
+
+
+    $this->drupalGet('training/menu/arguments/one/two');
+    $this->assertText(t('Argument 1=one'));
+
+    $rand = rand(100, 1000);
+    $this->drupalGet('training/menu/arguments/'.$rand);
+    $this->assertText(t('Argument 1=!arg', array('!arg'=>$rand)));
+
+
+    $this->drupalGet(t('training/menu/placeholder/3343/display'));
+    $this->assertRaw('<div>3343</div>');
+
+    $this->drupalGet(t('training/menu/default_arg/66'));
+    $this->assertResponse(404);
+
+    $this->drupalGet(t('training/menu/default_arg/99'));
+    $this->assertText(t('Almost there'));
+
+    $this->drupalGet(t('training/menu/default_arg/1'));
+    $this->assertText(t('Loaded value was one'));
+
+    $this->assertLink('Dynamic title: username= anonymous');
+
+
+    // Create a user with permissions to access protected menu entry.
+    $web_user = $this->drupalCreateUser();
+
+    // Use custom overridden drupalLogin function to verify the user is logged
+    // in.
+    $this->drupalLogin($web_user);
+
+    $this->assertLink(t('Dynamic title: username= @name', array('@name' => format_username($web_user))));
+
+    $this->drupalGet('training/menu');
+
+    $this->clickLink(t('Custom Access Menu Item'));
+    $this->assertText(t('Custom Access Menu Item'));
+
+    $this->drupalGet('training/menu/custom_access');
+    $this->assertResponse(200);
+
+    $this->drupalGet('training/menu/permissioned');
+    $this->assertResponse(403);
+
+    $web_user = $this->drupalCreateUser(array('access protected menu example'));
+    $this->drupalLogin($web_user);
+
+    $this->drupalGet('training/menu/permissioned');
+    $this->assertResponse(200);
+  }
+
+}
