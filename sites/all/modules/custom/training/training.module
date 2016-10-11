@@ -1,0 +1,239 @@
+<?php
+
+/**
+ * Implements hook_menu().
+ */
+function training_menu(){
+  $menu['menu'] = array(
+    'title' => 'Training Landing Page',
+    'page callback' => 'training_display_page',
+    'access callback' => TRUE,
+    'file' => 'training.pages.inc',
+    'expanded' => TRUE,
+  );
+
+  $menu['menu/custom_access'] = array(
+    'title' => 'Custom Access Menu Item',
+    'page callback' => 'training_access_page',
+    'access arguments' => array('custom access training'),
+    'file' => 'training.pages.inc',
+  );
+
+  $menu['menu/permissioned'] = array(
+    'title' => 'Permissioned Menu Item',
+    'page callback' => 'training_permissioned_page',
+    'access arguments' => array('permissioned access training'),
+    'file' => 'training.pages.inc',
+  );
+
+  $menu['menu/callback'] = array(
+    'page callback' => 'training_callback_page',
+    'file' => 'training.pages.inc',
+    'type' => MENU_CALLBACK,
+  );
+
+  $menu['menu/tabs'] = array(
+    'title' => 'Tabs',
+    'page callback' => 'training_tab_page',
+    'access callback' => TRUE,
+    'file' => 'training.pages.inc',
+  );
+
+  $menu['menu/tabs/default'] = array(
+    'title' => 'Default',
+    'page callback' => 'training_tab_page',
+    'access callback' => TRUE,
+    'file' => 'training.pages.inc',
+    'weight' => -10,
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+  );
+
+  $menu['menu/tabs/second'] = array(
+    'title' => 'Second',
+    'page callback' => 'training_tab_num_page',
+    'page arguments' => array(2),
+    'access callback' => TRUE,
+    'file' => 'training.pages.inc',
+    'weight'=> -9,
+    'type' => MENU_LOCAL_TASK,
+  );
+
+  $menu['menu/tabs/third'] = array(
+    'title' => 'Third',
+    'page callback' => 'training_tab_num_page',
+    'page arguments' =>  array(2),
+    'access callback' => TRUE,
+    'file' => 'training.pages.inc',
+    'weight' => -8,
+    'type' => MENU_LOCAL_TASK,
+  );
+
+  $menu['menu/tabs/forth'] = array(
+    'title' => 'Forth',
+    'page callback' => 'training_tab_num_page',
+    'page arguments' =>  array(2),
+    'access callback' => TRUE,
+    'file' => 'training.pages.inc',
+    'weight' => -7,
+    'type' => MENU_LOCAL_TASK,
+  );
+
+  $menu['menu/tabs/default/second'] = array(
+    'title' => 'Second',
+    'page callback' => 'training_tab_num_page',
+    'page arguments' => array(3,'1',),
+    'access callback' => TRUE,
+    'file' => 'training.pages.inc',
+    'weight' => -2,
+    'tab_parent' => 'menu/tabs/default',
+    'type' => MENU_LOCAL_TASK,
+  );
+
+  $menu['menu/tabs/default/third'] = array(
+    'title' => 'Third',
+    'page callback' => 'training_tab_num_page',
+    'page arguments' => array(3,'1',),
+    'access callback' => TRUE,
+    'file' => 'training.pages.inc',
+    'weight' => -1,
+    'type' => MENU_LOCAL_TASK,
+  );
+
+  $menu['menu/arguments'] = array(
+    'title' => 'Arguments',
+    'access callback' => TRUE,
+  );
+
+  $menu['menu/arguments/%/%'] = array(
+    'title' => 'Arguments',
+    'page callback' => 'training_arguments_page',
+    'page arguments' => array(2,3,),
+    'access callback' => TRUE,
+    'file' => 'training.pages.inc',
+  );
+
+  $menu['menu/placeholder'] = array(
+    'title' => 'Placeholder',
+    'access callback' => TRUE,
+  );
+
+  $menu['menu/placeholder/%/display'] = array(
+    'title' => 'Placeholder',
+    'access callback' => TRUE,
+    'page callback' => 'training_placeholder_page',
+    'page arguments' => array(2),
+    'file' => 'training.pages.inc',
+  );
+
+  $menu['menu/default_arg'] = array(
+    'title' => 'Default_arg',
+    'access callback' => TRUE,
+  );
+
+  $menu['menu/default_arg/%'] = array(
+    'title' => 'Placeholder',
+    'page callback' => 'training_default_arg_page',
+    'page arguments' => array(2),
+    'access callback' => TRUE,
+    'file' => 'training.pages.inc',
+  );
+
+  $menu['menu/title'] = array(
+    'title' => t('Dynamic title'),
+    'title callback' => 'training_title_title',
+    'page callback' => 'training_title_page',
+    'access callback' => TRUE,
+    'file' => 'training.pages.inc',
+  );
+
+  $menu['menu/main'] = array(
+    'title' => 'Item in main menu',
+    'access callback' => TRUE,
+    'menu_name' => 'main-menu',
+    'type' => MENU_NORMAL_ITEM,
+  );
+
+  $menu['theme'] = array(
+    'title' => 'Themes',
+    'page callback' => 'training_theme_page',
+    'access callback' => TRUE,
+    'file' => 'training.pages.inc',
+  );
+
+  $menu['theme/link'] = array(
+    'title' => 'Theme List',
+    'page callback' => 'training_theme_page',
+    'page arguments'=> array('child'),
+    'access callback' => TRUE,
+    'file' => 'training.pages.inc',
+    'weight' => -10,
+  );
+
+  $menu['theme/table'] = array(
+    'title' => 'Theme Table',
+    'page callback' => 'training_theme_table_page',
+    'access callback' => TRUE,
+    'file' => 'training.pages.inc',
+    'weight' => -9,
+  );
+  $menu['theme/image'] = array(
+    'title' => 'Theme Image',
+    'page callback' => 'training_theme_image_page',
+    'access callback' => TRUE,
+    'file' => 'training.pages.inc',
+    'weight' => -8,
+  );
+
+  $menu['theme/access'] = array(
+    'title' => 'Theme Access',
+    'page callback' => 'training_theme_access_page',
+    'access callback' => TRUE,
+    'file' => 'training.pages.inc',
+    'weight' => -7,
+  );
+
+  return $menu;
+}
+
+/**
+ *Implements hook_theme().
+ */
+function training_theme(){
+  $theme['training_theme'] = array(
+    'variables' => array(
+      'title' => NULL,
+      'links' => NULL,
+    ),
+   'template' => 'templates/training_template',
+  );
+
+  return $theme;
+}
+
+/**
+ * Theme function to create list of links to be themed by training_theme
+ *
+ * @param $variables
+ */
+function theme_training_theme($variables){
+  $title = $variables['title'];
+  $links = $variables['links'];
+}
+
+/**
+ * Implements hook_permission
+ */
+function training_permission(){
+  $permission = array(
+    'custom access training' => array(
+      'title' => 'Permission to access custom menu item',
+      'description' => 'Use this to control access to custom menu item',
+    ),
+    'permissioned access training' => array(
+      'title' => 'access protected menu example',
+      'description' => 'Use this to control access to permissioned menu item',
+    ),
+  );
+  return $permission;
+}
+
