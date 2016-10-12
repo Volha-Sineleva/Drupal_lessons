@@ -1,4 +1,3 @@
-name = "Training2"
+name = Training2
 description = "This module is to fufil 2nd hometask of the training"
 core = 7.x
-version = 1.0

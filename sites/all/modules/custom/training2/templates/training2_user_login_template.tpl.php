@@ -2,12 +2,10 @@
 
 /**
  * @file
- * Displays a page element (list)
+ * Displays an altered user-login form
  *
  * Available variables:
- * - $title: List title.
- * - $links: Links array.
- * - $items: Array of links' names.
+ * - $form: array.
  */
 ?>
 
