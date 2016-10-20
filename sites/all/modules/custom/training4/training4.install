@@ -1,0 +1,50 @@
+<?php
+
+/**
+ * Implements hook_schema().
+ */
+function training4_schema() {
+
+  $schema = array();
+  $schema['training4_message'] = array(
+    'description' => 'The table for messages.',
+    'fields' => array(
+      'id' => array(
+        'description' => 'Primary key of the basic entity.',
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'uid' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'type' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => '0',
+      ),
+      'title' => array(
+        'type' => 'varchar',
+        'length' => 60,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'body' => array(
+        'type' => 'text',
+        'size' => 'medium',
+        'not null' => TRUE,
+        'default' => '',
+      ),
+    ),
+    'primary key' => array('id'),
+    'indexes' => array(
+      'message_uid' => array('uid'),
+      'message_title' => array('title'),
+    ),
+  );
+
+  return $schema;
+}

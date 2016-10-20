@@ -1,0 +1,4 @@
+name = "Training"
+description = "This module is to fufil 1st hometask of the training"
+core = 7.x
+version = 1.0
