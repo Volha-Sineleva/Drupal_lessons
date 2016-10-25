@@ -1,0 +1,3 @@
+name = Training6
+description = Training module for internationalization, dates, security and rules
+core = 7.x
