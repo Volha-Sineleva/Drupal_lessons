@@ -1,0 +1,3 @@
+name = Training4
+description = Training module for entity.
+core = 7.x
