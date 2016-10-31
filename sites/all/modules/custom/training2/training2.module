@@ -89,7 +89,8 @@ function training2_user_login_secret_submit($form, &$form_state) {
 function training2_block_info() {
 
   $blocks['exchange'] = array(
-    'info' => t('Exchange'),
+    'info' => t('Training2 Exchange'),
+    'status' => 1,
     'region' => 'sidebar_first',
     'cache' => DRUPAL_CACHE_GLOBAL,
   );

@@ -56,7 +56,7 @@ function training_tab_num_page($tnum, $level = 0) {
 /**
  * Page callback for menu/arguments/%/%
  */
-function training_arguments_page ($one, $two) {
+function training_arguments_page($one, $two) {
 
   return t('Argument 1 = @one,<br> Argument 2 = @two.', array(
     '@one' => $one,
@@ -97,7 +97,7 @@ function training_default_arg_page($arg) {
       break;
 
     default:
-      $output = '404 page is not found';
+      $output = drupal_not_found();
   }
 
   return $output;
@@ -121,7 +121,7 @@ function training_title_title() {
 function training_theme_page() {
 
   $links = array(
-    'List' => 'theme/list',
+    'List' => 'theme/link',
     'Table' => 'theme/table',
     'Image' => 'theme/image',
     'Access' => 'theme/access',
@@ -141,14 +141,14 @@ function training_theme_page() {
  */
 function training_theme_table_page() {
 
-  $attributes = drupal_attributes(array('id' => 'table-test'));
+  $attributes = array('id' => 'table-test');
   $title_text = 'Theme table sample';
-  $title = '<h1' . $attributes . '>' . $title_text;
+  $title = '<h1' . drupal_attributes($attributes) . '>' . $title_text;
 
-  $header = array('header 1', 'header 2', 'header 3',);
+  $header = array('header 1', 'header 2', 'header 3');
   $rows=array(
     array(
-      'data'=> array(
+      'data' => array(
         '11',
         array('data' => '12', 'colspan' => 2),
       ),
@@ -175,27 +175,36 @@ function training_theme_table_page() {
  */
 function training_theme_image_page() {
 
-  $path =  drupal_get_path('module', 'training') . '/image/sample.png';
+  $path = '/training_images/sample.png';
+  $path_to_public_files = variable_get('file_public_path', conf_path() . '/files');
   $image_styles = image_styles();
-  $keys = array_keys($image_styles);
 
-  foreach ($image_styles as $i => $style) {
-    $styles_with_images[] = '<li>' . $style['label'] . '</li>'
-      . theme('image_style', array(
-        'style_name' => $i,
-        'path' => $path,
-      ));
+  foreach ($image_styles as $style_name => $style) {
+    $image = theme('image_style', array(
+      'style_name' => $style_name,
+      'path' => $path,
+    ));
+    $list_items[] = array(
+      'data' => $style['label'],
+      'children'=> array($image),
+    );
   }
 
-  $sl_title = t('Available styles for image:');
-  $sl_content = implode($styles_with_images);
-  $style_list = "<h3> $sl_title </h3><ul> $sl_content </ul>";
+  $image_list = theme_item_list(array(
+      'items' => $list_items,
+      'title' => t('Available styles for image:'),
+      'type' => 'ul',
+      'attributes' => array(),
+    )
+  );
+  $main_image = theme('image', array(
+      'path' => $path_to_public_files . $path,
+      'width' => '50%',
+      'attributes' => array('class' => 'simple-image'),
+    )
+  );
 
-  return theme('image', array(
-    'path'=> $path,
-    'width' => '50%',
-    'attributes'=> array('class'=>'simple-image'),
-  )) . $style_list;
+  return $main_image . $image_list;
 }
 
 /**
