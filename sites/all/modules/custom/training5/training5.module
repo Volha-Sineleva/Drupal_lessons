@@ -56,7 +56,7 @@ function training5_file_access_callback() {
     ->condition('f.uid', $user->uid);
   $result = $query->execute()->fetchCol();
 
-  return (in_array($user->uid, $result)) ? TRUE : FALSE;
+  return in_array($user->uid, $result);
 }
 
 /**
@@ -64,23 +64,19 @@ function training5_file_access_callback() {
  */
 function training5_files_page() {
 
+  global $user;
   ctools_include('modal');
   ctools_include('ajax');
   ctools_modal_add_js();
   drupal_add_css(drupal_get_path('module', 'training5') . '/css/training5.css');
   drupal_add_js(drupal_get_path('module', 'training5') . '/js/training5.js');
 
-  global $user;
   drupal_add_js(array('uid' => $user->uid), 'setting');
   $link = ctools_modal_text_button(t('+Add file'), 'files/nojs/add_file', 'Click');
   $content['link'] = array(
     '#type' => 'item',
     '#markup' => $link,
   );
-
-  // It does not work!!! Why???!!! I used entity_load instead.
-  // $files1 = file_load_multiple();
-  // kpr($files1);
 
   $files = entity_load('file');
   if (!empty($files)) {
@@ -133,7 +129,7 @@ function training5_file_add_form($form, $form_state) {
   $form['add_file'] = array(
     '#type' => 'managed_file',
     '#upload_validators' => array('training5_file_add_form_validate'),
-    '#upload_location' => 'public://files/training5_files',
+    '#upload_location' => file_default_scheme() . '://files/training5_files'
   );
   $form['submit'] = array(
     '#type' => 'submit',
@@ -144,9 +140,9 @@ function training5_file_add_form($form, $form_state) {
 }
 
 /**
- * Implements hook_form_submit().
+ * Submit form function.
  */
-function training5_file_add_form_submit(&$form, &$form_state) {
+function training5_file_add_form_submit($form, &$form_state) {
   $file = file_load($form_state['values']['add_file']);
   $file->status = FILE_STATUS_PERMANENT;
   file_save($file);
@@ -159,8 +155,8 @@ function training5_file_add_form_submit(&$form, &$form_state) {
 function training5_files_table($files) {
 
   $header = array(
-    'fid' => array('data' => t('File ID'), 'class' => 'table_fid'),
-    'uid' => array('data' => t('User ID')),
+    'fid' => array('data' => t('File ID')),
+    'uid' => array('data' => t('User ID'), 'class' => 'table_fid'),
     'author' => array('data' => t('Author')),
     'filename' => array('data' => t('Name')),
     'path' => array('data' => t('Path')),
@@ -175,11 +171,11 @@ function training5_files_table($files) {
 
     $rows[] = array(
       'data' => array(
-        'fid' => array(
-          'data' => $file->fid,
+        'fid' => $file->fid,
+        'uid' => array(
+          'data' => $file->uid,
           'class' => 'table_fid',
         ),
-        'uid' => $file->uid,
         'author' => $user->name,
         'filename' => $file->filename,
         'path' => $url,
@@ -209,6 +205,7 @@ function training5_file_download_page($file) {
 
 /**
  * Callback function for exchange_rates/load.
+ *
  * To load and insert rates to BD via batch operation.
  */
 function training5_batch() {
@@ -239,7 +236,6 @@ function training5_batch_callback(&$context) {
   $query = db_insert('training5_exchange_rates')->fields(array('code', 'rate'));
   foreach ($rates as $rate) {
     $query->values($rate);
-
   }
   $query->execute();
   $context['results'] = format_date(REQUEST_TIME, 'custom', 'd-m-y H:i:s');
@@ -269,13 +265,12 @@ function training2_get_remote_xml($url) {
   curl_setopt($ch, CURLOPT_URL, $url);
   curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
   $xmlresponse = curl_exec($ch);
-  $data = simplexml_load_string($xmlresponse);
 
-  return $data;
+  return simplexml_load_string($xmlresponse);
 }
 
 /**
- * Callback function for /exchange_rates.
+ * Page callback function for /exchange_rates.
  */
 function training5_exchange_rates_page() {
 
@@ -294,9 +289,9 @@ function training5_exchange_rates_page() {
  * Implements hook_views_api().
  */
 function training5_views_api() {
+  $module_path = drupal_get_path('module', 'training5');
   return array(
     'api' => 3,
-    'path' => drupal_get_path('module', 'training5'),
-    'template path' => drupal_get_path('module', 'training5'),
+    'path' => $module_path . '/views',
   );
 }

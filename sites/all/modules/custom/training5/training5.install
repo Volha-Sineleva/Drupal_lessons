@@ -2,6 +2,7 @@
 
 /**
  * Implements hook_schema().
+ *
  * Table for exchange rates of NBRB.
  */
 function training5_schema() {
