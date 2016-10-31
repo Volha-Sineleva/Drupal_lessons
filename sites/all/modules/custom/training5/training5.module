@@ -1,0 +1,297 @@
+<?php
+
+/**
+ * Url to current exchange rates of national bank of Belarus.
+ */
+define('TRAINING5_NBRB_EXCHANGE_RATES_REMOTE_XML', 'http://www.nbrb.by/Services/XmlExRates.aspx');
+
+/**
+ * Implements hook_menu().
+ */
+function training5_menu() {
+
+  $menu['files'] = array(
+    'title' => 'Files',
+    'page callback' => 'training5_files_page',
+    'access callback' => TRUE,
+  );
+  $menu['files/%ctools_js/add_file'] = array(
+    'title' => 'Add file',
+    'page callback' => 'training5_file_add_page',
+    'page arguments' => array(1),
+    'access callback' => TRUE,
+    'type' => MENU_CALLBACK,
+  );
+  $menu['files/download/%file'] = array(
+    'title' => 'Download file',
+    'page callback' => 'training5_file_download_page',
+    'page arguments' => array(2),
+    'access callback' => 'training5_file_access_callback',
+    'type' => MENU_CALLBACK,
+  );
+  $menu['exchange_rates'] = array(
+    'title' => 'Exchange Rates',
+    'page callback' => 'training5_exchange_rates_page',
+    'access callback' => TRUE,
+  );
+  $menu['exchange_rates/load'] = array(
+    'title' => 'Exchange Rates Load',
+    'page callback' => 'training5_batch',
+    'access callback' => TRUE,
+    'type' => MENU_CALLBACK,
+  );
+
+  return $menu;
+}
+
+/**
+ * Custom callback function for files/download/%file.
+ * Defines user access to downloading files.
+ */
+function training5_file_access_callback() {
+
+  global $user;
+  $query = db_select('file_managed', 'f')
+    ->fields('f', array('uid'))
+    ->condition('f.uid', $user->uid);
+  $result = $query->execute()->fetchCol();
+
+  return in_array($user->uid, $result);
+}
+
+/**
+ * Custom callback function for /files.
+ */
+function training5_files_page() {
+
+  global $user;
+  ctools_include('modal');
+  ctools_include('ajax');
+  ctools_modal_add_js();
+  drupal_add_css(drupal_get_path('module', 'training5') . '/css/training5.css');
+  drupal_add_js(drupal_get_path('module', 'training5') . '/js/training5.js');
+
+  drupal_add_js(array('uid' => $user->uid), 'setting');
+  $link = ctools_modal_text_button(t('+Add file'), 'files/nojs/add_file', 'Click');
+  $content['link'] = array(
+    '#type' => 'item',
+    '#markup' => $link,
+  );
+
+  $files = entity_load('file');
+  if (!empty($files)) {
+    $content['file_table'] = training5_files_table($files);
+  }
+  else {
+    $content['file_table'] = array(
+      '#type' => 'item',
+      '#markup' => t('There are no loaded files. Feel free to add any.'),
+    );
+  }
+
+  return $content;
+}
+
+/**
+ * Custom callback function for files/%ctools_js/add_file.
+ */
+function training5_file_add_page($js) {
+
+  if (!$js) {
+    return drupal_get_form('training5_file_add_form');
+  }
+
+  ctools_include('modal');
+  ctools_include('ajax');
+  $form_state = array(
+    'ajax' => TRUE,
+    'title' => 'Add file',
+  );
+  $commands = ctools_modal_form_wrapper('training5_file_add_form', $form_state);
+
+  if (!empty($form_state['executed'])) {
+    $add_link = ctools_modal_text_button(t('+Add file'), 'files/nojs/add_file', 'Click');
+    $back_link = l(t('Back to the list of files'), 'files');
+    $response = t('File is loaded.') . '<br>' . $add_link . '<br>' . $back_link;
+    $commands = array();
+    $commands[] = ctools_modal_command_display(t('File is loaded.'), $response);
+  }
+
+  print ajax_render($commands);
+  exit;
+}
+
+/**
+ * Function to create "add file" form.
+ */
+function training5_file_add_form($form, $form_state) {
+
+  $form['add_file'] = array(
+    '#type' => 'managed_file',
+    '#upload_validators' => array('training5_file_add_form_validate'),
+    '#upload_location' => file_default_scheme() . '://files/training5_files'
+  );
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => 'OK',
+  );
+
+  return $form;
+}
+
+/**
+ * Submit form function.
+ */
+function training5_file_add_form_submit($form, &$form_state) {
+  $file = file_load($form_state['values']['add_file']);
+  $file->status = FILE_STATUS_PERMANENT;
+  file_save($file);
+  $form_state['redirect'] = 'files';
+}
+
+/**
+ * Function to create "files" table for /files.
+ */
+function training5_files_table($files) {
+
+  $header = array(
+    'fid' => array('data' => t('File ID')),
+    'uid' => array('data' => t('User ID'), 'class' => 'table_fid'),
+    'author' => array('data' => t('Author')),
+    'filename' => array('data' => t('Name')),
+    'path' => array('data' => t('Path')),
+    'status' => array('data' => t('Status')),
+    'link' => array('data' => t('Download')),
+  );
+  foreach ($files as $file) {
+    $user = user_load($file->uid);
+    $status = $file->status ? 'permanent' : 'temporary';
+    $url = file_create_url($file->uri);
+    $link = l(t('Download'), "files/download/$file->fid");
+
+    $rows[] = array(
+      'data' => array(
+        'fid' => $file->fid,
+        'uid' => array(
+          'data' => $file->uid,
+          'class' => 'table_fid',
+        ),
+        'author' => $user->name,
+        'filename' => $file->filename,
+        'path' => $url,
+        'status' => $status,
+        'link' => $link,
+      ),
+      'class' => array('uid-' . $file->uid),
+    );
+  }
+  $table = array(
+    '#theme' => 'table',
+    '#header' => $header,
+    '#rows' => $rows,
+  );
+
+  return $table;
+}
+
+/**
+ * Custom callback function to download file for files/download/%file.
+ */
+function training5_file_download_page($file) {
+  $headers = file_get_content_headers($file);
+  $headers['Content-Disposition'] = "attachment; filename=\"$file->filename\"";
+  file_transfer($file->uri, $headers);
+}
+
+/**
+ * Callback function for exchange_rates/load.
+ *
+ * To load and insert rates to BD via batch operation.
+ */
+function training5_batch() {
+  $batch = array(
+    'title' => t('Exchange rates exporting'),
+    'operations' => array(
+      array('training5_batch_callback', array()),
+    ),
+    'finished' => 'training5_batch_finished',
+  );
+  batch_set($batch);
+  batch_process('exchange_rates');
+}
+
+/**
+ * "Operation" function of training5_batch().
+ */
+function training5_batch_callback(&$context) {
+
+  $rates_sxml = training2_get_remote_xml(TRAINING5_NBRB_EXCHANGE_RATES_REMOTE_XML);
+  foreach ($rates_sxml->Currency as $currency) {
+    $rates[] = array(
+      'code' => (string) $currency->CharCode,
+      'rate' => (string) $currency->Rate,
+    );
+  }
+  $query = db_delete('training5_exchange_rates')->execute();
+  $query = db_insert('training5_exchange_rates')->fields(array('code', 'rate'));
+  foreach ($rates as $rate) {
+    $query->values($rate);
+  }
+  $query->execute();
+  $context['results'] = format_date(REQUEST_TIME, 'custom', 'd-m-y H:i:s');
+}
+
+/**
+ * "Finished" function of training5_batch().
+ */
+function training5_batch_finished($success, $results, $operations) {
+
+  if ($success) {
+    $message = t('Successfully loaded at !results', array('!results' => $results));
+  }
+  else {
+    $message = t('Finished with error.');
+  }
+
+  drupal_set_message($message);
+}
+
+/**
+ * Custom function to get xml document by url
+ */
+function training2_get_remote_xml($url) {
+
+  $ch = curl_init();
+  curl_setopt($ch, CURLOPT_URL, $url);
+  curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
+  $xmlresponse = curl_exec($ch);
+
+  return simplexml_load_string($xmlresponse);
+}
+
+/**
+ * Page callback function for /exchange_rates.
+ */
+function training5_exchange_rates_page() {
+
+  $content = array(
+    '#theme' => 'item_list',
+    '#items' => array(
+      l(t('Load exchange rates from NB.'), 'exchange_rates/load'),
+      l(t('Look at loaded exchange rates.'), 'exchange_rates/view'),
+    ),
+  );
+
+  return $content;
+}
+
+/**
+ * Implements hook_views_api().
+ */
+function training5_views_api() {
+  $module_path = drupal_get_path('module', 'training5');
+  return array(
+    'api' => 3,
+    'path' => $module_path . '/views',
+  );
+}

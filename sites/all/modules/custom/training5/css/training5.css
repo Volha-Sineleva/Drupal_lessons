@@ -1,0 +1,6 @@
+/**
+ * Attaches styles to tables - hides fid row.
+ */
+.table_fid {
+  display: none;
+}

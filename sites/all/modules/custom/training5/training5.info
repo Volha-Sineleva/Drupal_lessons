@@ -1,0 +1,3 @@
+name = Training5
+description = Training module for files and libraries.
+core = 7.x
