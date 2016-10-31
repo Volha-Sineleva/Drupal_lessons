@@ -227,7 +227,7 @@ function entity_example_info_page() {
     );
   }
   $content['table'] = entity_example_basic_list_entities();
-
+kpr($content);
   return $content;
 }
 
