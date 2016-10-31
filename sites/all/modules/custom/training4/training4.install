@@ -36,7 +36,6 @@ function training4_schema() {
         'type' => 'text',
         'size' => 'medium',
         'not null' => TRUE,
-        'default' => '',
       ),
     ),
     'primary key' => array('id'),

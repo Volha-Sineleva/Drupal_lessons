@@ -29,6 +29,7 @@ function training_menu() {
   $menu['menu/callback'] = array(
     'page callback' => 'training_callback_page',
     'file' => 'training.pages.inc',
+    'access callback' => TRUE,
     'type' => MENU_CALLBACK,
   );
 
@@ -54,7 +55,7 @@ function training_menu() {
     'page arguments' => array(2),
     'access callback' => TRUE,
     'file' => 'training.pages.inc',
-    'weight'=> -9,
+    'weight' => -9,
     'type' => MENU_LOCAL_TASK,
   );
 
@@ -81,7 +82,7 @@ function training_menu() {
   $menu['menu/tabs/default/second'] = array(
     'title' => 'Second',
     'page callback' => 'training_tab_num_page',
-    'page arguments' => array(3,'1'),
+    'page arguments' => array(3, '1'),
     'access callback' => TRUE,
     'file' => 'training.pages.inc',
     'weight' => -2,
@@ -92,7 +93,7 @@ function training_menu() {
   $menu['menu/tabs/default/third'] = array(
     'title' => 'Third',
     'page callback' => 'training_tab_num_page',
-    'page arguments' => array(3,'1'),
+    'page arguments' => array(3, '1'),
     'access callback' => TRUE,
     'file' => 'training.pages.inc',
     'weight' => -1,
@@ -107,7 +108,7 @@ function training_menu() {
   $menu['menu/arguments/%/%'] = array(
     'title' => 'Arguments',
     'page callback' => 'training_arguments_page',
-    'page arguments' => array(2,3),
+    'page arguments' => array(2, 3),
     'access callback' => TRUE,
     'file' => 'training.pages.inc',
   );
