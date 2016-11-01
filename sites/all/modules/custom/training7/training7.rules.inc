@@ -50,7 +50,8 @@ function training7_rules_action_info() {
 function training7_lottery_result() {
 
   $rand = rand(1, 8);
-  $server = url($GLOBALS['base_url'] . '/xmlrpc.php', array('external' => TRUE));
+  global $base_url;
+  $server = url($base_url . '/xmlrpc.php', array('external' => TRUE));
   $options = array(
     'training7_lottery_run.generate' => array($rand),
   );
@@ -64,11 +65,11 @@ function training7_lottery_result() {
   }
 
   $lottery_id = cache_get('current_lottery_id');
-  $lottery_id = !$lottery_id? 0 : $lottery_id->data;
+  $lottery_id = $lottery_id? $lottery_id->data : 0;
   $data = cache_get('lottery_list');
-  $data = !$data ? array() : $data->data;
+  $data = $data ? $data->data : array();
 
-  $lottery_id ++;
+  $lottery_id++;
   global $user;
   $data[] = array(
     'lottery_ID' => $lottery_id,
@@ -79,7 +80,7 @@ function training7_lottery_result() {
   cache_set('lottery_list', $data);
   cache_set('current_lottery_id', $lottery_id);
 
-  return $lottery_code === LOTTERY_WIN_CODE;
+  return $lottery_code === TRAINING7_LOTTERY_WIN_CODE;
 }
 
 /**

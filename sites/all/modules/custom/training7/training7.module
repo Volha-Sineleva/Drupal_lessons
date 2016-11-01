@@ -3,8 +3,8 @@
 /**
  * Available lottery codes.
  */
-define('LOTTERY_WIN_CODE', 'win');
-define('LOTTERY_LOOSE_CODE', 'loose');
+define('TRAINING7_LOTTERY_WIN_CODE', 'win');
+define('TRAINING7_LOTTERY_LOOSE_CODE', 'loose');
 
 /**
  * Implements hook_menu().
@@ -91,7 +91,8 @@ function training7_block_contents($delta = '') {
 function training7_lottery_page() {
 
   global $user;
-  if (user_has_role(2)) {
+  $role=user_role_load_by_name('authenticated user');
+  if (user_has_role($role->rid)) {
     rules_invoke_event('training7_user_visited_lottery');
     $link = l(t('Try once more'), current_path());
     $lottery_message = cache_get($user->uid . '_is_winner');
@@ -131,6 +132,6 @@ function training7_xmlrpc() {
  * XML-RPC callback for training7_lottery_run.generate.
  */
 function _training7_lottery_run_callback($rand) {
-  $lottery_code = $rand == rand(1, 8) ? LOTTERY_WIN_CODE : LOTTERY_LOOSE_CODE;
+  $lottery_code = $rand == rand(1, 8) ? TRAINING7_LOTTERY_WIN_CODE : TRAINING7_LOTTERY_LOOSE_CODE;
   return $lottery_code;
 }
